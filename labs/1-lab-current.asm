@@ -65,25 +65,12 @@ _check_mul_condition:
     * Código principal para realizar la operación R = A * B, donde A y B son
     * matrices de 32-bits con signo y R es una matriz de 64-bits con signo.
     */
-	mov r0, #4			// Cargar valor inmediato 0 a r0
-
 	ldr r1, =MatA		// MatA[0]
-	mul r2, r9, r10		// MA * MB
-	add r2, r2, #2		// MA * MB + 2
-	mul r2, r2, r0		// (MA * MB + 2) * 4 bytes
-	add r2, r1, r2 		// MatB[0]
+	mul r0, r9, r10		// MA * MB 
+	add r0, r0, #2		// MatB[0] = MA * MB + 2
 
-	mov r0, #0			// Limpiar r0
-
-_loop:
-	ldr r4, [r1]
-	ldr r5, [r1, r2]
-	mul r0, r4, r5
-//	mul r4, [r1, #(4*1)], [r2, #(4*1)]
-//	mul r5, [r1, #(4*2)], [r2, #(4*2)]
-//	add r0, r0, r4
-//	add r0, r0, r5
-
+_operation:
+	ldr 
     /* Fin del programa:
     * Bucle infinito para evitar la búsqueda de nuevas instrucciones
     */
@@ -106,14 +93,14 @@ finish:
 	*/
 	MA:     .dc.l   3
 	NA:     .dc.l   3
-	MatA:   .dc.l   5,	2,	1
-			.dc.l   2,	1,	2
-			.dc.l   4,	1,	3
+	MatA:   .dc.l   -58451, 21542,  53654
+			.dc.l   4575,   211551, -98545212
+			.dc.l   -12457, 21542,  -36595
 	MB:     .dc.l   3
-	NB:     .dc.l   3
-	MatB:   .dc.l   1,	4,	2
-			.dc.l   0,	3,	0
-			.dc.l   2,	1,	3
+	NB:     .dc.l   2
+	MatB:   .dc.l   -54842, 1
+			.dc.l   24515,	1
+			.dc.l   54421,	1
 	MR:     .ds.l   1
 	NR:     .ds.l   1
 	MatR:   .ds.l   (MAXMN*MAXMN*2)
