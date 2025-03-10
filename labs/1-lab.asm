@@ -85,7 +85,7 @@ _compute_NR:
 	b _row_loop
 
 _next_row:
-	add r11, r11, #1	//	
+	add r11, r11, #1	// i++
 	mov r0, #0			// Limpiar r0 e inicializar en 0
 	mov r12, #0			// Limpiar r12 e inicializar en 0. Auxiliar columnas
 	
@@ -94,14 +94,14 @@ _next_row:
 	ldr r7, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r7
 	ldr r7, [r7]		// Cargar el número de filas de MatB en r7
 
-	ldr r1, =MatA		// Dirección en memoria de MatA[0]
-	ldr r2, =MatB		// Dirección en memoria de MatB[0]
-	mul r6, r8, r11		// Siguiente byte en memoria (4 * n)
-	add r1, r1, r6		// Posicionar en la siguiente columna
+	cmp r11, r9			// Si i == MA
+	bge	_continue		// Salir del ciclo
+
+	ldr r2, =MatB		// Dirección en memoria de MatB[0]. Reposicionar MatB
 	b _row_loop
 
 _next_col:
-	ldr r7, =MB		// Reinicio: Cargar la dirección en memoria del objeto MB en r7
+	ldr r7, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r7
 	ldr r7, [r7]		// Cargar el número de filas de MatB en r7
 
 	mul r0, r7, r8		// Calcular cantidad de bytes a desplazar a la izquierda
@@ -124,20 +124,21 @@ _row_loop:
 	mul r6, r8, r6		// NB * 4 bytes...
 	add r2, r2, r6		// Dirección en memoria de MatB[i]
 
-	subs r7, r7, #1	// i--
+	subs r7, r7, #1		// k--
 	bne _row_loop		// Siguiente iteración
 
 	str r0, [r3]		// Almacenar MatR[i]
 	add r3, r3, r8		// Siguiente posicion de memoria de MatB en 32 bits (pendiente 64 bits)
-	add r12, r12, #1
+	add r12, r12, #1	// j++
 
 	ldr r6, =NA			// Cargar la dirección en memoria del objeto NA en r6
 	ldr r6, [r6]		// Cargar el número de columnas de MatA en r6
 	cmp r12, r6			// Si i == NA
 	beq _next_row		// Siguiente fila de MatA
 	b _next_col			// Siguiente columna de MatB
-	b finish
 
+_continue:
+	mov r0, #77
     /* Fin del programa:
     * Bucle infinito para evitar la búsqueda de nuevas instrucciones
     */
