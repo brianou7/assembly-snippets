@@ -138,7 +138,7 @@ _row_loop:
 	b _next_col			// Siguiente columna de MatB
 
 _continue:
-	mov r0, #77
+	b finish
     /* Fin del programa:
     * Bucle infinito para evitar la búsqueda de nuevas instrucciones
     */
@@ -162,14 +162,14 @@ finish:
 	*/
 	MA:     .dc.l   3
 	NA:     .dc.l   3
-	MatA:   .dc.l   5,	2,	1
-			.dc.l   2,	1,	2
-			.dc.l   4,	1,	3
+	MatA:   .dc.l   -58451,	21542,	53654
+			.dc.l   4575,	211551,	-9854512
+			.dc.l   -12457,	21542,	-36595
 	MB:     .dc.l   3
-	NB:     .dc.l   3
-	MatB:   .dc.l   1,	4,	2
-			.dc.l   0,	3,	0
-			.dc.l   2,	1,	3
+	NB:     .dc.l   1
+	MatB:   .dc.l   -54842
+			.dc.l   24515
+			.dc.l   54421
 	MR:     .ds.l   1
 	NR:     .ds.l   1
 	MatR:   .ds.l   (MAXMN*MAXMN*2)
