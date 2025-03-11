@@ -77,8 +77,8 @@ _compute_NR:
 	ldr r1, =MatA		// Dirección en memoria de MatA[0]
 	ldr r2, =MatB		// Dirección en memoria de MatB[0]
 	ldr r3, =MatR		// Dirección en memoria de MatR[0]
-	ldr r7, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r7
-	ldr r7, [r7]		// Cargar el número de filas de MatB en r7
+	ldr r9, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r9
+	ldr r9, [r9]		// Cargar el número de filas de MatB en r9
 	mov r8, #4			// Cargar el valor inmediato 4 en r4 para posterior multiplicación
 	mov r11, #0			// Auxiliar de posición de fila MatA
 	mov r12, #0			// Auxiliar de posición de columna MatB
@@ -86,56 +86,61 @@ _compute_NR:
 
 _next_row:
 	add r11, r11, #1	// i++
-	mov r0, #0			// Limpiar r0 e inicializar en 0
 	mov r12, #0			// Limpiar r12 e inicializar en 0. Auxiliar columnas
 	
-	ldr r9, =MA			// Reinicio: Cargar la dirección en memoria del objeto MA en r9
-	ldr r9, [r9]		// Cargar el número de filas de MatA en r9
-	ldr r7, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r7
-	ldr r7, [r7]		// Cargar el número de filas de MatB en r7
+	ldr r0, =MA			// Reinicio: Cargar la dirección en memoria del objeto MA en r0
+	ldr r0, [r0]		// Cargar el número de filas de MatA en r0
+	ldr r9, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r9
+	ldr r9, [r9]		// Cargar el número de filas de MatB en r9
 
-	cmp r11, r9			// Si i == MA
+	cmp r11, r0			// Si i == MA
 	bge	_continue		// Salir del ciclo
 
 	ldr r2, =MatB		// Dirección en memoria de MatB[0]. Reposicionar MatB
+	mov r0, #0			// Limpiar r0 e inicializar en 0. Acumulador MatR[i] LSB
+	mov r10, #0			// Limpiar r10 e inicializar en 0. Acumulador MatR[i] MSB
 	b _row_loop
 
 _next_col:
-	ldr r7, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r7
-	ldr r7, [r7]		// Cargar el número de filas de MatB en r7
+	ldr r9, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r9
+	ldr r9, [r9]		// Cargar el número de filas de MatB en r9
 
-	mul r0, r7, r8		// Calcular cantidad de bytes a desplazar a la izquierda
+	mul r0, r9, r8		// Calcular cantidad de bytes a desplazar a la izquierda
 	sub r1, r1, r0		// Desplezar posición de memoria al inicio de la fila m de MatA
 
 	mov r0, #0			// Limpiar r0 e inicializar en 0
+	mov r10, #0			// Limpiar r10 e inicializar en 0
 	ldr r2, =MatB		// Dirección en memoria de MatB[0]
 	mul r6, r8, r12		// Siguiente byte en memoria (4 * n)
 	add r2, r2, r6		// Posicionar en la siguiente columna
 
 _row_loop:
-	ldr r4, [r1]		// Valor en MatA[i]
-	ldr r5, [r2]		// Valor en MatB[i]
-	mul r6, r4, r5		// Aux para: MatA[0] * MatB[0]
-	add r0, r0, r6		// Aux
+	ldr r4, [r1]			// Valor en MatA[i]
+	ldr r5, [r2]			// Valor en MatB[j]
+	smull r6, r7, r4, r5	// Operar: MatA[i] * MatB[j] -> MatR[i][i+4] 64 bits
+	adds r0, r0, r6			// Sumar parte baja (LSB)
+	adc r10, r10, r7		// Sumar parte alta (MSB)
 
-	add r1, r1, r8		// Dirección en memoria de MatA[i]
-	ldr r6, =NB			//
-	ldr r6, [r6]		//
-	mul r6, r8, r6		// NB * 4 bytes...
-	add r2, r2, r6		// Dirección en memoria de MatB[i]
+	add r1, r1, r8			// Calcular la siguiente posición en memoria de MatA: Mat[i+1]
+	ldr r6, =NB				// Cargar la dirección en memoria de NB
+	ldr r6, [r6]			// Cargar de la memoria la cantidad de columnas de MatB = NB
+	mul r6, r8, r6			// Calcular la siguiente posición en memoria de MatB: NB * 4 bytes
+	add r2, r2, r6			// Calcular la siguiente dirección en memoria de MatB: MatB[j+1]
 
-	subs r7, r7, #1		// k--
-	bne _row_loop		// Siguiente iteración
+	subs r9, r9, #1			// k--
+	bne _row_loop			// Siguiente iteración
+							// Almacenar MatR[j][j+4]... little-endian: LSB-MSB
+	str r0, [r3]			// Almacenar MatR[j]: LSB...
+	str r10, [r3, #4]		// Almacenar MatR[j+4]: MSB
+	add r3, r3, r8			// Calcular la siguiente posicion de memoria de MatR: [MatR] + 4 (x1)
+	add r3, r3, r8			// Calcular la siguiente posicion de memoria de MatR: [MatR] + 4 (x2)
+	add r12, r12, #1		// l++
 
-	str r0, [r3]		// Almacenar MatR[i]
-	add r3, r3, r8		// Siguiente posicion de memoria de MatB en 32 bits (pendiente 64 bits)
-	add r12, r12, #1	// j++
-
-	ldr r6, =NA			// Cargar la dirección en memoria del objeto NA en r6
-	ldr r6, [r6]		// Cargar el número de columnas de MatA en r6
-	cmp r12, r6			// Si i == NA
-	beq _next_row		// Siguiente fila de MatA
-	b _next_col			// Siguiente columna de MatB
+	ldr r6, =NA				// Cargar la dirección en memoria del objeto NA en r6
+	ldr r6, [r6]			// Cargar el número de columnas de MatA en r6
+	cmp r12, r6				// Si i == NA
+	beq _next_row			// Siguiente fila de MatA
+	b _next_col				// Siguiente columna de MatB
 
 _continue:
 	b finish
