@@ -80,20 +80,20 @@ _compute_NR:
 	ldr r9, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r9
 	ldr r9, [r9]		// Cargar valor del número de filas de MatB en r9
 	mov r8, #4			// Cargar el valor inmediato #4 en r4 para posterior multiplicación
-	mov r11, #0			// Auxiliar/contador de posición de fila MatA: i =0
-	mov r12, #0			// Auxiliar/contador de posición de columna MatB: j = 0
+	mov r11, #0			// Auxiliar/contador de posición de fila MatA: k =0
+	mov r12, #0			// Auxiliar/contador de posición de columna MatB: l = 0
 	b _row_loop
 
 _next_row:
-	add r11, r11, #1	// i++
-	mov r12, #0			// Limpiar r12 e inicializar en 0. Auxiliar columnas: j = 0
+	add r11, r11, #1	// k++
+	mov r12, #0			// Limpiar r12 e inicializar en 0. Auxiliar columnas: l = 0
 
 	ldr r0, =MA			// Reinicio: Cargar la dirección en memoria del objeto MA en r0
 	ldr r0, [r0]		// Cargar el valor del número de filas de MatA en r0
 	ldr r9, =MB			// Reinicio: Cargar la dirección en memoria del objeto MB en r9
 	ldr r9, [r9]		// Cargar el valor del número de filas de MatB en r9
 
-	cmp r11, r0			// Si: i == MA sino: Reposicionar MatB
+	cmp r11, r0			// Si: k == MA sino: Reposicionar MatB
 	bge	_continue		// Salir del ciclo
 
 	ldr r2, =MatB		// Reposicionar MatB: Cargar la dirección en memoria de MatB[0]
@@ -138,7 +138,7 @@ _row_loop:
 
 	ldr r6, =NA				// Cargar la dirección en memoria del objeto NA en r6
 	ldr r6, [r6]			// Cargar el número de columnas de MatA en r6
-	cmp r12, r6				// Si i == NA
+	cmp r12, r6				// Si l == NA
 	beq _next_row			// Siguiente fila de MatA
 	b _next_col				// Siguiente columna de MatB
 
