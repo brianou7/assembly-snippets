@@ -170,13 +170,15 @@ check_special_cases:
 	mov r2, r8					// b = B[i]
 	bl is_NaN_case				// Revisar si aplica caso especial: r = NaN.
 	bl is_infinite_case_1		// Revisar si aplica caso especial: r = +-Infinite (Operadores iguales).
-	bl is_infinite_case_2		// Revisar si aplica caso especial: +-Infinite (Operadores diferentes).
+	bl is_infinite_case_2		// Revisar si aplica caso especial: r = +-Infinite (Operadores diferentes).
 	bl is_special_NaN_case		// Revisar si aplica caso especial: r = NaN (Cero e Infinito).
+	bl is_zero_case				// Revisar si aplica caso especial: r = 0 (Cero e Infinito).
 
 	mov r1, r8					// a = B[i]
 	mov r2, r7					// b = A[i]
 	bl is_infinite_case_2		// Revisar si aplica caso especial: +-Infinite (Operadores diferentes + Operadores invertidos).	
 	bl is_special_NaN_case		// Revisar si aplica caso especial: r = NaN (Cero e Infinito + Operadores invertidos).
+	bl is_zero_case				// Revisar si aplica caso especial: r = 0 (Cero e Infinito + Operadores invertidos).
 	b _return					// No se aplicó ningún caso especial!
 get_sign:
 	mov r1, r4, LSR #31			// Extraer signo de A
